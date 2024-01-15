@@ -26,7 +26,7 @@ train_loader = DataLoader(
 )
 test_loader = DataLoader(test_data, batch_size=64, shuffle=True, collate_fn=collate_fn)
 
-"""Get model"""
+"""Get Train Configurations"""
 in_dim = 18
 out_dim = 2
 total_epoch = 100
@@ -35,6 +35,8 @@ model = LinearRegression(in_dim=in_dim, out_dim=out_dim)
 criterion = CrossEntropyLoss()
 optimizer = optim.SGD(model.parameters(), lr=learning_rate)
 
+
+"""Start Training"""
 for epoch in range(total_epoch):
     for feat, label in train_loader:
         out = model(feat)
@@ -43,3 +45,14 @@ for epoch in range(total_epoch):
         loss.backward()
         optimizer.step()
         print(loss, end="\r")
+
+"""Evaluation"""
+total = 0
+correct = 0
+for feat, label in test_loader:
+    out = model(feat)
+    pred = torch.argmax(out, dim=-1)
+    total += len(pred)
+    correct += torch.sum(pred == label).item()
+print("\n")
+print(f"Total: {total}, Correct: {correct}, Accuracy: {round(correct/total*100, 2)}")
