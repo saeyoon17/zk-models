@@ -1,9 +1,10 @@
-import os
 import csv
-import torch
+import os
+
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder
+import torch
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import Dataset
 
 
