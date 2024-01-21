@@ -23,14 +23,14 @@ test_data = HeartFailureDataset(split="test")
 test_loader = DataLoader(test_data, batch_size=64, shuffle=True, collate_fn=collate_fn)
 
 """EZKL configurations"""
-model_path = os.path.join("network.onnx")
-compiled_model_path = os.path.join("network.compiled")
-pk_path = os.path.join("test.pk")
-vk_path = os.path.join("test.vk")
-settings_path = os.path.join("settings.json")
+model_path = os.path.join("ezkl_data/network.onnx")
+compiled_model_path = os.path.join("ezkl_data/network.compiled")
+pk_path = os.path.join("ezkl_data/test.pk")
+vk_path = os.path.join("ezkl_data/test.vk")
+settings_path = os.path.join("ezkl_data/settings.json")
 
-witness_path = os.path.join("witness.json")
-data_path = os.path.join("input.json")
+witness_path = os.path.join("ezkl_data/witness.json")
+data_path = os.path.join("ezkl_data/input.json")
 
 # TODO: Change this into test data
 for feat, label in test_loader:
@@ -108,7 +108,7 @@ for feat, label in test_loader:
 
     # GENERATE A PROOF
 
-    proof_path = os.path.join("test.pf")
+    proof_path = os.path.join("ezkl_data/test.pf")
 
     res = ezkl.prove(
         witness_path,
