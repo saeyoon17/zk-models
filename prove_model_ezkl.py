@@ -33,7 +33,7 @@ witness_path = os.path.join("ezkl_data/witness.json")
 data_path = os.path.join("ezkl_data/input.json")
 
 # TODO: Change this into test data
-for feat, label in test_loader:
+for idx, (feat, label) in enumerate(test_loader):
     # Flips the neural net into inference mode
     model.eval()
     # ipdb.set_trace()
@@ -70,7 +70,7 @@ for feat, label in test_loader:
     py_run_args.input_visibility = "public"
     py_run_args.output_visibility = "public"
     py_run_args.param_visibility = "private"  # private by default
-    py_run_args.variables = [("batch_size", 64)]
+    py_run_args.variables = [("batch_size", feat.size(0))]
 
     res = ezkl.gen_settings(model_path, settings_path, py_run_args=py_run_args)
     assert res == True
@@ -131,5 +131,3 @@ for feat, label in test_loader:
 
     assert res == True
     print("verified")
-
-    ipdb.set_trace()
