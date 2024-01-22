@@ -166,3 +166,5 @@ cython_debug/
 *.pk
 *.vk
 *.DS_Store
+*.ptau
+*.key

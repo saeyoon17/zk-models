@@ -29,4 +29,4 @@ template LinearRegression (m,n,p) {
     }
 }
 //bs x input_dim x output_dim
-component main {public [a]} = matMul(64,18,2);
+component main {public [a]} = LinearRegression(64,18,2);
