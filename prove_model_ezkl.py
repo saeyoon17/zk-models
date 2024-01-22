@@ -1,5 +1,7 @@
 import json
 import os
+import time
+from collections import defaultdict
 
 import ezkl
 import ipdb
@@ -8,11 +10,10 @@ from torch.utils.data import DataLoader
 
 from data import HeartFailureDataset
 from models import LinearRegression
-
 from train import collate_fn
 
 """Get checkpoints, test dataset"""
-
+result = defaultdict(lambda: 0)
 PATH = "./model_ckpt.pt"
 ckpt = torch.load(PATH)
 in_dim = 18
@@ -28,16 +29,26 @@ compiled_model_path = os.path.join("ezkl_data/network.compiled")
 pk_path = os.path.join("ezkl_data/test.pk")
 vk_path = os.path.join("ezkl_data/test.vk")
 settings_path = os.path.join("ezkl_data/settings.json")
-
 witness_path = os.path.join("ezkl_data/witness.json")
 data_path = os.path.join("ezkl_data/input.json")
 
-# TODO: Change this into test data
+num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+total = 0
+correct = 0
+zk_total = 0
+zk_correct = 0
 for idx, (feat, label) in enumerate(test_loader):
-    # Flips the neural net into inference mode
     model.eval()
-    # ipdb.set_trace()
     torch_out = model(feat)
+    input_size = feat.size()
+    output_size = torch_out.size()
+
+    # Calculate model accuracy
+    pred = torch.argmax(torch_out, dim=-1)
+    total += len(pred)
+    correct += torch.sum(pred == label).item()
+
     # Export the model
     torch.onnx.export(
         model,  # model being run
@@ -55,15 +66,11 @@ for idx, (feat, label) in enumerate(test_loader):
     )
 
     data_array = ((feat).detach().numpy()).reshape([-1]).tolist()
-
-    #    data = dict(input_data=[data_array])
     data = dict(
         input_shapes=[feat.shape],
         input_data=[data_array],
         output_data=[((torch_out).detach().numpy()).reshape([-1]).tolist()],
     )
-    # ipdb.set_trace()
-    # Serialize data into file:
     json.dump(data, open(data_path, "w"))
 
     py_run_args = ezkl.PyRunArgs()
@@ -72,44 +79,59 @@ for idx, (feat, label) in enumerate(test_loader):
     py_run_args.param_visibility = "private"  # private by default
     py_run_args.variables = [("batch_size", feat.size(0))]
 
+    st = time.time()
     res = ezkl.gen_settings(model_path, settings_path, py_run_args=py_run_args)
+    result["setting_time"] += time.time() - st
     assert res == True
 
     # calibration
+    st = time.time()
     ezkl.calibrate_settings(data_path, model_path, settings_path, "resources")
+    result["calibration_time"] += time.time() - st
 
+    st = time.time()
     res = ezkl.compile_circuit(model_path, compiled_model_path, settings_path)
+    result["compile_time"] += time.time() - st
     assert res == True
 
     # srs path
+    st = time.time()
     res = ezkl.get_srs(settings_path)
+    result["get_srs_time"] += time.time() - st
 
-    # now generate the witness file
-    # ipdb.set_trace()
+    st = time.time()
     res = ezkl.gen_witness(data_path, compiled_model_path, witness_path)
+    result["witness_generation_time"] += time.time() - st
     assert os.path.isfile(witness_path)
+    with open(witness_path, "r") as f:
+        wtns = json.load(f)
+    # ipdb.set_trace()
+    scaled_input = torch.tensor(
+        [float(e) for e in wtns["pretty_elements"]["rescaled_inputs"][0]]
+    ).reshape(input_size)
+    scaled_output = torch.tensor(
+        [float(e) for e in wtns["pretty_elements"]["rescaled_outputs"][0]]
+    ).reshape(output_size)
+    zk_pred = torch.argmax(scaled_output, dim=-1)
+    zk_total += len(zk_pred)
+    zk_correct += torch.sum(zk_pred == label).item()
 
-    # HERE WE SETUP THE CIRCUIT PARAMS
-    # WE GOT KEYS
-    # WE GOT CIRCUIT PARAMETERS
-    # EVERYTHING ANYONE HAS EVER NEEDED FOR ZK
-
+    st = time.time()
     res = ezkl.setup(
         compiled_model_path,
         vk_path,
         pk_path,
     )
+    result["setup_time"] += time.time() - st
 
     assert res == True
     assert os.path.isfile(vk_path)
     assert os.path.isfile(pk_path)
     assert os.path.isfile(settings_path)
-    # first of all, check this for the first batch only.
-
-    # GENERATE A PROOF
 
     proof_path = os.path.join("ezkl_data/test.pf")
 
+    st = time.time()
     res = ezkl.prove(
         witness_path,
         compiled_model_path,
@@ -117,17 +139,25 @@ for idx, (feat, label) in enumerate(test_loader):
         proof_path,
         "single",
     )
-
+    result["proof_generation_time"] += time.time() - st
     print(res)
     assert os.path.isfile(proof_path)
 
     # VERIFY IT
-
+    st = time.time()
     res = ezkl.verify(
         proof_path,
         settings_path,
         vk_path,
     )
-
+    result["verification_time"] += time.time() - st
     assert res == True
     print("verified")
+
+# log results
+result["num_params"] = num_params
+result["total"] = total
+result["correct"] = correct
+result["zk_total"] = zk_total
+result["zk_correct"] = zk_correct
+ipdb.set_trace()

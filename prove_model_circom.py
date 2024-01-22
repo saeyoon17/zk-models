@@ -5,21 +5,23 @@
 
 import json
 import os
+import time
 from subprocess import check_output
-import ezkl
+from collections import defaultdict
+
 import ipdb
 import torch
 from torch.utils.data import DataLoader
 
 from data import HeartFailureDataset
 from models import LinearRegression
-
 from train import collate_fn
 
 """Get checkpoints, test dataset"""
 
 PATH = "./model_ckpt.pt"
 ckpt = torch.load(PATH)
+result = defaultdict(lambda: 0)
 in_dim = 18
 out_dim = 2
 input_scaling_factor = 1e9
@@ -34,9 +36,20 @@ test_loader = DataLoader(
 
 linear_weight = model.state_dict()["linear.weight"]
 linear_bias = model.state_dict()["linear.bias"]
+num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+total = 0
+correct = 0
+zk_total = 0
+zk_correct = 0
 for idx, (feat, label) in enumerate(test_loader):
     # Flips the neural net into inference mode
     model.eval()
+    torch_out = model(feat)
+
+    # Calculate model accuracy
+    pred = torch.argmax(torch_out, dim=-1)
+    total += len(pred)
+    correct += torch.sum(pred == label).item()
 
     # PAD if batch size is smaller
     if feat.size(0) != batch_size:
@@ -47,10 +60,16 @@ for idx, (feat, label) in enumerate(test_loader):
         (linear_weight * weight_scaling_factor).to(torch.int).reshape(-1).tolist()
     )
     linear_bias_scaled = (
-        (linear_bias * weight_scaling_factor).to(torch.int).reshape(-1).tolist()
+        (linear_bias * weight_scaling_factor * input_scaling_factor)
+        .to(torch.int)
+        .reshape(-1)
+        .tolist()
     )
-    # if the batch size is not fixed (last batch element), circom proof generation will fail.
-    # TODO: pad
+
+    out = {"out": torch_out.reshape(-1).tolist()}
+    # dump files
+    with open(f"circom_data/output_{idx}.json", "w") as f:
+        json.dump(out, f)
 
     input = {"a": feat_scaled, "b": linear_weight_scaled, "bias": linear_bias_scaled}
     # dump files
@@ -70,27 +89,38 @@ for idx, (feat, label) in enumerate(test_loader):
 
 # Proving
 for i in range(len(test_loader)):
+    st = time.time()
     a = check_output(
         [
             f"node ./circom_circuits/linear_regression_js/generate_witness.js ./circom_circuits/linear_regression_js/linear_regression.wasm ./circom_data/input_{i}.json ./circom_data/witness_{i}.wtns"
         ],
         shell=True,
     )
+    result["witness_generation_time"] += time.time() - st
+    st = time.time()
     b = check_output(
         [
             f"snarkjs groth16 prove ./circom_circuits/prove01.key ./circom_data/witness_{i}.wtns ./circom_data/proof_{i}.json ./circom_data/public_{i}.json"
         ],
         shell=True,
     )
+    result["proof_generation_time"] += time.time() - st
+    st = time.time()
     c = check_output(
         [
             f"snarkjs groth16 verify ./circom_circuits/verification_key.json ./circom_data/public_{i}.json ./circom_data/proof_{i}.json"
         ],
         shell=True,
     )
-    print(c)
+    result["verification_time"] += time.time() - st
+
+result["num_params"] = num_params
+result["total"] = total
+result["correct"] = correct
+ipdb.set_trace()
 # node ./circom_circuits/linear_regression_js/generate_witness.js ./circom_circuits/linear_regression_js/linear_regression.wasm ./circom_data/inputx.json witnessx.wtns
 # snarkjs groth16 prove proof01.key witnessx.wtns proofx.json publicx.json
 # snarkjs groth16 verify verification-key.json publicx.json proofx.json
+
 
 # Proof generation
