@@ -1,1 +1,1 @@
-from .linear import LinearRegression
+from .linear import LinearRegression, MLP

@@ -11,8 +11,8 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from data import HeartFailureDataset
-from models import LinearRegression
-from train import collate_fn
+from models import LinearRegression, MLP
+from train_linear_regression import collate_fn
 
 
 def test_perf(num_trials, result):
@@ -68,9 +68,9 @@ def test_perf(num_trials, result):
             assert res == True
 
             # calibration
-            st = time.time()
-            ezkl.calibrate_settings(data_path, model_path, settings_path, "resources")
-            result["calibration_time"].append(time.time() - st)
+            # st = time.time()
+            # ezkl.calibrate_settings(data_path, model_path, settings_path, "resources")
+            # result["calibration_time"].append(time.time() - st)
 
             st = time.time()
             res = ezkl.compile_circuit(model_path, compiled_model_path, settings_path)
@@ -148,13 +148,14 @@ def test_perf(num_trials, result):
 if __name__ == "__main__":
     """Get checkpoints, test dataset"""
     result = defaultdict(lambda: [])
-    PATH = "./data/model_ckpt.pt"
+    PATH = "./data/mlp_ckpt.pt"
     ckpt = torch.load(PATH)
     in_dim = 18
+    hidden_dim = 64
     out_dim = 2
     num_trials = 20
-    batch_size = 64
-    model = LinearRegression(in_dim=in_dim, out_dim=out_dim)
+    batch_size = 32
+    model = MLP(in_dim=in_dim, hidden_dim=hidden_dim, out_dim=out_dim)
     model.load_state_dict(ckpt["model_state_dict"])
     test_data = HeartFailureDataset(split="test")
     test_loader = DataLoader(
