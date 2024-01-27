@@ -25,7 +25,7 @@ describe('circom perf degradation', function () {
 
             assert(Fr.eq(Fr.e(witness[0]), Fr.e(1)));
 
-            const scale = 1E-18;
+            const scale = 1E-12;
 
             let predicted = [];
             for (var i = 0; i < OUTPUT['out'].length; i++) {

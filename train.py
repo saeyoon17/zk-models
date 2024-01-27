@@ -63,7 +63,7 @@ if __name__ == "__main__":
     )
 
     """Checkpointing"""
-    PATH = "./model_ckpt.pt"
+    PATH = "./data/model_ckpt.pt"
     torch.save(
         {
             "model_state_dict": model.state_dict(),
