@@ -36,7 +36,7 @@ if __name__ == "__main__":
     hidden_dim = 8
     out_dim = 2
     total_epoch = 100
-    learning_rate = 1e-4
+    learning_rate = 1e-3
     model = MLP(in_dim=in_dim, hidden_dim=hidden_dim, out_dim=out_dim)
     criterion = CrossEntropyLoss()
     optimizer = optim.AdamW(model.parameters(), lr=learning_rate)

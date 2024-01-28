@@ -21,7 +21,7 @@ class MLP(torch.nn.Module):
 
     def forward(self, x):
         # MLP with polynomial activation function
-        out = self.linear1(x)
-        out = self.linear2(out)
+        out = self.relu(self.linear1(x))
+        out = self.relu(self.linear2(out))
         out = self.linear3(out)
         return out
