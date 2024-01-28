@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from data import HeartFailureDataset
-from models import LinearRegression, MLP
+from models import MLP, LinearRegression
 from train_linear_regression import collate_fn
 
 
