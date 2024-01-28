@@ -69,7 +69,14 @@ def test_perf(num_trials, result):
 
             # calibration
             st = time.time()
-            ezkl.calibrate_settings(data_path, model_path, settings_path, "resources")
+            ezkl.calibrate_settings(
+                data_path,
+                model_path,
+                settings_path,
+                "resources",
+                max_logrows=12,
+                scales=[2],
+            )
             result["calibration_time"].append(time.time() - st)
 
             st = time.time()
