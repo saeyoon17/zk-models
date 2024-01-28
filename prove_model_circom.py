@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from data import HeartFailureDataset
-from models import LinearRegression
+from models import LinearRegression, MLP
 from train_linear_regression import collate_fn
 
 
@@ -86,7 +86,7 @@ def test_perf(num_trials, result):
             st = time.time()
             a = check_output(
                 [
-                    f"node ./circom_circuits/linear_regression_js/generate_witness.js ./circom_circuits/linear_regression_js/linear_regression.wasm ./circom_data/input_{i}.json ./circom_data/witness_{i}.wtns"
+                    f"node ./circom_circuits/mlp_js/generate_witness.js ./circom_circuits/mlp_js/mlp.wasm ./circom_data/input_{i}.json ./circom_data/witness_{i}.wtns"
                 ],
                 shell=True,
             )
@@ -117,22 +117,26 @@ def test_perf(num_trials, result):
 
 if __name__ == "__main__":
     """Get checkpoints, test dataset"""
-    PATH = "./data/model_ckpt.pt"
+    PATH = "./data/mlp_ckpt.pt"
     ckpt = torch.load(PATH)
     result = defaultdict(lambda: [])
     in_dim = 18
     out_dim = 2
-    num_trials = 20
+    num_trials = 1
     batch_size = 64
-    model = LinearRegression(in_dim=in_dim, out_dim=out_dim)
+    model = MLP(in_dim=in_dim, out_dim=out_dim)
     model.load_state_dict(ckpt["model_state_dict"])
     test_data = HeartFailureDataset(split="test")
     test_loader = DataLoader(
         test_data, batch_size=batch_size, shuffle=True, collate_fn=collate_fn
     )
-
-    linear_weight = model.state_dict()["linear.weight"]
-    linear_bias = model.state_dict()["linear.bias"]
+    ipdb.set_trace()
+    linear1_weight = model.state_dict()["linear1.weight"]
+    linear1_bias = model.state_dict()["linear1.bias"]
+    linear2_weight = model.state_dict()["linear2.weight"]
+    linear2_bias = model.state_dict()["linear2.bias"]
+    linear3_weight = model.state_dict()["linear3.weight"]
+    linear3_bias = model.state_dict()["linear3.bias"]
     num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     test_perf(num_trials, result)
     print("===== RESULT =====")
