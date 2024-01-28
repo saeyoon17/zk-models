@@ -45,7 +45,6 @@ if __name__ == "__main__":
     for epoch in range(total_epoch):
         for feat, label in train_loader:
             out = model(feat)
-            # ipdb.set_trace()
             loss = criterion(out, label)
             loss.backward()
             optimizer.step()

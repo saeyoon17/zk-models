@@ -69,7 +69,6 @@ def test_perf(num_trials, result):
 
             # calibration
             st = time.time()
-            # ipdb.set_trace()
             ezkl.calibrate_settings(data_path, model_path, settings_path, "resources")
             result["calibration_time"].append(time.time() - st)
 
@@ -179,7 +178,7 @@ if __name__ == "__main__":
     print(f"===== {num_trials} TRIALS =====")
     for k, v in result.items():
         if "_time" in k:
-            print(f"AVG {k}: {np.sum(v)}")
+            print(f"SUM {k}: {np.sum(v)}")
         else:
             print(f"AVG {k}: {np.mean(v)}±{np.std(v)}")
 
