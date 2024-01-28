@@ -21,25 +21,25 @@ def collate_fn(data):
 
 if __name__ == "__main__":
     """Get dataset"""
-    batch_size = 32
+    batch_size = 16
     train_data = HeartFailureDataset(split="train")
     test_data = HeartFailureDataset(split="test")
     train_loader = DataLoader(
         train_data, batch_size=batch_size, shuffle=True, collate_fn=collate_fn
     )
     test_loader = DataLoader(
-        test_data, batch_size=batch_size, shuffle=True, collate_fn=collate_fn
+        test_data, batch_size=batch_size, shuffle=False, collate_fn=collate_fn
     )
 
     """Get Train Configurations"""
     in_dim = 18
-    hidden_dim = 64
+    hidden_dim = 8
     out_dim = 2
     total_epoch = 100
-    learning_rate = 1e-3
+    learning_rate = 1e-4
     model = MLP(in_dim=in_dim, hidden_dim=hidden_dim, out_dim=out_dim)
     criterion = CrossEntropyLoss()
-    optimizer = optim.SGD(model.parameters(), lr=learning_rate)
+    optimizer = optim.AdamW(model.parameters(), lr=learning_rate)
 
     """Start Training"""
     for epoch in range(total_epoch):

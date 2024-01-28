@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 from data import HeartFailureDataset
 from models import LinearRegression
-from train import collate_fn
+from train_linear_regression import collate_fn
 
 
 def test_perf(num_trials, result):
@@ -31,8 +31,8 @@ def test_perf(num_trials, result):
             total += len(pred)
             correct += torch.sum(pred == label).item()
 
-            scaling = float(10 ** 6)
-            bias_scaling = float(10 ** 12)
+            scaling = float(10**6)
+            bias_scaling = float(10**12)
             feat_scaled = [int(e * scaling) for e in feat.reshape(-1).tolist()]
             linear_weight_scaled = [
                 int(e * scaling) for e in linear_weight.T.reshape(-1).tolist()

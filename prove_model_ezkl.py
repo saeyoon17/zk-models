@@ -68,9 +68,10 @@ def test_perf(num_trials, result):
             assert res == True
 
             # calibration
-            # st = time.time()
-            # ezkl.calibrate_settings(data_path, model_path, settings_path, "resources")
-            # result["calibration_time"].append(time.time() - st)
+            st = time.time()
+            # ipdb.set_trace()
+            ezkl.calibrate_settings(data_path, model_path, settings_path, "resources")
+            result["calibration_time"].append(time.time() - st)
 
             st = time.time()
             res = ezkl.compile_circuit(model_path, compiled_model_path, settings_path)
@@ -151,10 +152,10 @@ if __name__ == "__main__":
     PATH = "./data/mlp_ckpt.pt"
     ckpt = torch.load(PATH)
     in_dim = 18
-    hidden_dim = 64
+    hidden_dim = 8
     out_dim = 2
-    num_trials = 20
-    batch_size = 32
+    num_trials = 1
+    batch_size = 16
     model = MLP(in_dim=in_dim, hidden_dim=hidden_dim, out_dim=out_dim)
     model.load_state_dict(ckpt["model_state_dict"])
     test_data = HeartFailureDataset(split="test")
@@ -170,13 +171,17 @@ if __name__ == "__main__":
     settings_path = os.path.join("ezkl_data/settings.json")
     witness_path = os.path.join("ezkl_data/witness.json")
     data_path = os.path.join("ezkl_data/input.json")
+    cal_path = os.path.join("ezkl_data/calibration.json")
 
     num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     test_perf(num_trials, result)
     print("===== RESULT =====")
     print(f"===== {num_trials} TRIALS =====")
     for k, v in result.items():
-        print(f"AVG {k}: {np.mean(v)}±{np.std(v)}")
+        if "_time" in k:
+            print(f"AVG {k}: {np.sum(v)}")
+        else:
+            print(f"AVG {k}: {np.mean(v)}±{np.std(v)}")
 
     avg_acc = np.sum(result["correct"]) / np.sum(result["total"]) * 100
     zk_avg_acc = np.sum(result["zk_correct"]) / np.sum(result["zk_total"]) * 100
