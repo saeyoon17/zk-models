@@ -27,7 +27,7 @@ circom ./circom_circuits/mlp.circom --r1cs --wasm --sym
 snarkjs powersoftau new bn128 19 pot19_0000.ptau -v
 snarkjs powersoftau contribute pot19_0000.ptau pot19_0001.ptau --name="First contribution" -v
 snarkjs powersoftau prepare phase2 pot19_0001.ptau pot19_final.ptau -v
-snarkjs groth16 setup mlp.r1cs pot12_final.ptau proof0.key
+snarkjs groth16 setup mlp.r1cs pot19_final.ptau proof0.key
 snarkjs zkey contribute proof0.key proof01.key --name="your name" -v
 snarkjs zkey export verificationkey proof01.key verification_key.json
 ```
