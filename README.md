@@ -46,6 +46,7 @@ pip install ezkl
 ```
 After that, you can generate proof by running:
 ```
+cd ..
 python prove_model_ezkl.py
 ```
 
