@@ -1,0 +1,6 @@
+torch==2.1.2
+torchvision==0.16.2
+numpy==1.26.3
+ipdb==0.13.13
+tqdm==4.66.1
+ezkl==7.1.12
