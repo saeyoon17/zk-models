@@ -20,6 +20,7 @@ After the training has finished, you can find your model checkpoint under *data*
 
 ## Converting neural network using Circom
 For circom proof generation, we use Groth16 backend. Therefore, you first need to go through Groth16 specific setups.
+They only need to be run once. After generating the keys, they can be reused in later proving protocol.
 They are: 
 
 ```
