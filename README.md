@@ -23,7 +23,8 @@ For circom proof generation, we use Groth16 backend. Therefore, you first need t
 They are: 
 
 ```
-circom ./circom_circuits/mlp.circom --r1cs --wasm --sym
+cd circom_data
+circom ../circom_circuits/mlp.circom --r1cs --wasm --sym
 snarkjs powersoftau new bn128 19 pot19_0000.ptau -v
 snarkjs powersoftau contribute pot19_0000.ptau pot19_0001.ptau --name="First contribution" -v
 snarkjs powersoftau prepare phase2 pot19_0001.ptau pot19_final.ptau -v
