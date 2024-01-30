@@ -103,12 +103,13 @@ def test_perf(num_trials, result):
                 json.dump(input, f)
 
         # Before this, you manually need to execute:
-        # circom ./circom_circuits/linear_regression.circom --r1cs --wasm --sym
-        # snarkjs powersoftau new bn128 12 pot12_0000.ptau -v
-        # snarkjs powersoftau contribute pot12_0000.ptau pot12_0001.ptau --name="First contribution" -v
+        # cd circom_data
+        # circom ../circom_circuits/mlp.circom --r1cs --wasm --sym
+        # snarkjs powersoftau new bn128 19 pot19_0000.ptau -v
+        # snarkjs powersoftau contribute pot19_0000.ptau pot19_0001.ptau --name="First contribution" -v
 
-        # snarkjs powersoftau prepare phase2 pot12_0001.ptau pot12_final.ptau -v
-        # snarkjs groth16 setup linear_regression.r1cs pot12_final.ptau proof0.key
+        # snarkjs powersoftau prepare phase2 pot19_0001.ptau pot19_final.ptau -v
+        # snarkjs groth16 setup mlp.r1cs pot19_final.ptau proof0.key
         # snarkjs zkey contribute proof0.key proof01.key --name="your name" -v
         # snarkjs zkey export verificationkey proof01.key verification_key.json
 
@@ -117,7 +118,7 @@ def test_perf(num_trials, result):
             st = time.time()
             a = check_output(
                 [
-                    f"node ./circom_circuits/mlp_js/generate_witness.js ./circom_circuits/mlp_js/mlp.wasm ./circom_data/input_{i}.json ./circom_data/witness_{i}.wtns"
+                    f"node ./circom_data/mlp_js/generate_witness.js ./circom_data/mlp_js/mlp.wasm ./circom_data/input_{i}.json ./circom_data/witness_{i}.wtns"
                 ],
                 shell=True,
             )
@@ -125,7 +126,7 @@ def test_perf(num_trials, result):
             st = time.time()
             b = check_output(
                 [
-                    f"snarkjs groth16 prove ./circom_circuits/proof01.key ./circom_data/witness_{i}.wtns ./circom_data/proof_{i}.json ./circom_data/public_{i}.json"
+                    f"snarkjs groth16 prove ./circom_data/proof01.key ./circom_data/witness_{i}.wtns ./circom_data/proof_{i}.json ./circom_data/public_{i}.json"
                 ],
                 shell=True,
             )
@@ -133,7 +134,7 @@ def test_perf(num_trials, result):
             st = time.time()
             c = check_output(
                 [
-                    f"snarkjs groth16 verify ./circom_circuits/verification_key.json ./circom_data/public_{i}.json ./circom_data/proof_{i}.json"
+                    f"snarkjs groth16 verify ./circom_data/verification_key.json ./circom_data/public_{i}.json ./circom_data/proof_{i}.json"
                 ],
                 shell=True,
             )
