@@ -50,4 +50,4 @@ python prove_model_ezkl.py
 ```
 
 ## Notes
-*prove_model_circom.py* and *prove_model_ezkl.py* supports utils for calculating accuracy, performance degradation when converted to zk circuit, and checking time complexity for generating proof / proof verification. The results will come out after all proofs have been generated and verified. Currently EZKL suffers from performance degradation. We conjecture this comes from the EZKL calibration hyperparameters and plan to look more into this. More details can be found in the report under *report* directory.
+*prove_model_circom.py* and *prove_model_ezkl.py* supports utils for calculating accuracy, performance degradation when converted to zk circuit, and checking time complexity for generating proof / proof verification. The results will come out after all proofs have been generated and verified. We observe performance degradation for EZKL from time-to-time, in which we conjecture this may be due to different weights in each train time. We plan to look deeper in the future.
