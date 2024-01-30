@@ -3,6 +3,12 @@ This repository aims to provide pipelines for trainig neural networks and provin
 Current implementation supports transforming linear regression model and multi-layer perceptron (MLP) to zk circuit.
 You can choose to convert neural network to zk circuit by using Circom or EZKL.
 
+## Installing packages
+You can install necessary packages by running:
+```
+pip install -r requirements.txt
+```
+
 ## Training neural network.
 *train_linear_regression.py* and *train_mlp.py* provides pipeline for training heart failure prediction model.
 You can train your model by running:
@@ -41,11 +47,7 @@ python prove_model_circom.py
 for proving your model. We note that current code supports proof generation for MLP. For linear regression, you may want to change file names and proxy calculation for checking performance degradation when neural network gets transformed into zk circuit. We are planning to modify the code so that user can switch between models with more flexibility. 
 
 ## Converting neural network using EZKL
-For EZKL proof generation, first install EZKL via:
-```
-pip install ezkl
-```
-After that, you can generate proof by running:
+After training your model, you can generate proof by running:
 ```
 python prove_model_ezkl.py
 ```
