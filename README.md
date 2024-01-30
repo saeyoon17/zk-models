@@ -34,6 +34,7 @@ snarkjs zkey export verificationkey proof01.key verification_key.json
 ```
 after thant, you can run 
 ```
+cd ..
 python prove_model_circom.py
 ```
 for proving your model. We note that current code supports proof generation for MLP. For linear regression, you may want to change file names and proxy calculation for checking performance degradation when neural network gets transformed into zk circuit. We are planning to modify the code so that user can switch between models with more flexibility. 
@@ -45,7 +46,6 @@ pip install ezkl
 ```
 After that, you can generate proof by running:
 ```
-cd ..
 python prove_model_ezkl.py
 ```
 
