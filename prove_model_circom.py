@@ -15,7 +15,7 @@ from models import MLP, LinearRegression
 from train_linear_regression import collate_fn
 
 
-def test_perf(num_trials, result):
+def test_perf(num_trials, result, ckpt, hidden_layer):
     for trial_idx in tqdm(range(num_trials)):
         total = 0
         correct = 0
@@ -31,49 +31,48 @@ def test_perf(num_trials, result):
             total += len(pred)
             correct += torch.sum(pred == label).item()
 
+            # scaling layers
             scaling = float(10 ** 4)
             bias_scaling = scaling ** 2
             feat_scaled = [int(e * scaling) for e in feat.reshape(-1).tolist()]
-            linear1_weight_scaled = [
-                int(e * scaling) for e in linear1_weight.T.reshape(-1).tolist()
-            ]
-            linear1_bias_scaled = [
-                int(e * bias_scaling) for e in linear1_bias.reshape(-1).tolist()
-            ]
-            linear2_weight_scaled = [
-                int(e * scaling) for e in linear2_weight.T.reshape(-1).tolist()
-            ]
-            linear2_bias_scaled = [
-                int(e * bias_scaling * scaling)
-                for e in linear2_bias.reshape(-1).tolist()
-            ]
-            linear3_weight_scaled = [
-                int(e * scaling) for e in linear3_weight.T.reshape(-1).tolist()
-            ]
-            linear3_bias_scaled = [
-                int(e * bias_scaling * scaling * scaling)
-                for e in linear3_bias.reshape(-1).tolist()
-            ]
+            scaled_weights = dict()
+            # ipdb.set_trace()
+            for layer_idx in range(hidden_layer+2):
+                linear_weight = ckpt[f'linear.{layer_idx}.weight']
+                bias = ckpt[f'linear.{layer_idx}.bias']
+
+                linear_weight_scaled = [
+                    int(e * scaling) for e in linear_weight.T.reshape(-1).tolist()
+                ]
+                bias_scaled = [
+                    int(e * bias_scaling*(scaling**(layer_idx))) for e in bias.reshape(-1).tolist()
+                ]
+                scaled_weights[f'weight{layer_idx+1}'] = linear_weight_scaled
+                scaled_weights[f'bias{layer_idx+1}'] = bias_scaled
 
             # proxy for performance degradation: this calculates the same value as circom circuit.
             m = torch.nn.ReLU()
-            a = (feat * scaling).to(torch.int64)
-            b1 = torch.tensor(linear1_weight_scaled, dtype=torch.int64).reshape(
-                in_dim, hidden_dim
-            )
-            c1 = torch.tensor(linear1_bias_scaled, dtype=torch.int64)
-            b2 = torch.tensor(linear2_weight_scaled, dtype=torch.int64).reshape(
-                hidden_dim, hidden_dim
-            )
-            c2 = torch.tensor(linear2_bias_scaled, dtype=torch.int64)
-            b3 = torch.tensor(linear3_weight_scaled, dtype=torch.int64).reshape(
-                hidden_dim, out_dim
-            )
-            c3 = torch.tensor(linear3_bias_scaled, dtype=torch.int64)
-            proxy1 = m(a @ b1 + c1)
-            proxy2 = m(proxy1 @ b2 + c2)
-            proxy3 = proxy2 @ b3 + c3
-            circom_pred = torch.argmax(proxy3, dim=-1)
+            proxy = (feat * scaling).to(torch.int64)
+            for layer_idx in range(hidden_layer+2):
+                if layer_idx == 0:
+                    dim1 = in_dim
+                    dim2 = hidden_dim
+                elif layer_idx == hidden_layer+1:
+                    dim1 = hidden_dim
+                    dim2 = out_dim
+                else:
+                    dim1 = hidden_dim
+                    dim2 = hidden_dim
+                # ipdb.set_trace()
+                linear_weight = torch.tensor(scaled_weights[f'weight{layer_idx+1}'], dtype=torch.int64).reshape(dim1, dim2)
+                bias = torch.tensor(scaled_weights[f'bias{layer_idx+1}'], dtype=torch.int64)
+                if layer_idx != hidden_layer +1:
+                    proxy = m(proxy@linear_weight + bias)
+                else:
+                    proxy = proxy@linear_weight + bias
+                # ipdb.set_trace()
+
+            circom_pred = torch.argmax(proxy, dim=-1)
             zk_total += len(pred)
             zk_correct += torch.sum(circom_pred == label).item()
 
@@ -89,18 +88,11 @@ def test_perf(num_trials, result):
             with open(f"circom_data/output_{idx}.json", "w") as f:
                 json.dump(out, f)
 
-            input = {
-                "batch_in": feat_scaled,
-                "weight1": linear1_weight_scaled,
-                "bias1": linear1_bias_scaled,
-                "weight2": linear2_weight_scaled,
-                "bias2": linear2_bias_scaled,
-                "weight3": linear3_weight_scaled,
-                "bias3": linear3_bias_scaled,
-            }
+            scaled_weights['batch_in'] = feat_scaled
             # dump files
             with open(f"circom_data/input_{idx}.json", "w") as f:
-                json.dump(input, f)
+                json.dump(scaled_weights, f)
+        ipdb.set_trace()
 
         # Before this, you manually need to execute:
         # cd circom_data
@@ -157,20 +149,24 @@ if __name__ == "__main__":
     out_dim = 2
     num_trials = 1
     batch_size = 16
-    model = MLP(in_dim=in_dim, hidden_dim=hidden_dim, out_dim=out_dim)
+    hidden_layer = 1
+    model = MLP(in_dim=in_dim, hidden_dim=hidden_dim, out_dim=out_dim, hidden_layer=hidden_layer)
     model.load_state_dict(ckpt["model_state_dict"])
     test_data = HeartFailureDataset(split="test")
     test_loader = DataLoader(
         test_data, batch_size=batch_size, shuffle=True, collate_fn=collate_fn
     )
-    linear1_weight = model.state_dict()["linear1.weight"]
-    linear1_bias = model.state_dict()["linear1.bias"]
-    linear2_weight = model.state_dict()["linear2.weight"]
-    linear2_bias = model.state_dict()["linear2.bias"]
-    linear3_weight = model.state_dict()["linear3.weight"]
-    linear3_bias = model.state_dict()["linear3.bias"]
+    # ipdb.set_trace()
+    # weights = dict()
+    # for layer_idx in range(1, hidden_layer+1):
+    # linear1_weight = model.state_dict()["linear1.weight"]
+    # linear1_bias = model.state_dict()["linear1.bias"]
+    # linear2_weight = model.state_dict()["linear2.weight"]
+    # linear2_bias = model.state_dict()["linear2.bias"]
+    # linear3_weight = model.state_dict()["linear3.weight"]
+    # linear3_bias = model.state_dict()["linear3.bias"]
     num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    test_perf(num_trials, result)
+    test_perf(num_trials, result, ckpt['model_state_dict'], hidden_layer)
     print("===== RESULT =====")
     print(f"===== {num_trials} TRIALS =====")
     for k, v in result.items():

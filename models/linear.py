@@ -12,16 +12,21 @@ class LinearRegression(torch.nn.Module):
 
 
 class MLP(torch.nn.Module):
-    def __init__(self, in_dim, hidden_dim, out_dim):
+    def __init__(self, in_dim, hidden_dim, out_dim, hidden_layer):
         super(MLP, self).__init__()
-        self.linear1 = torch.nn.Linear(in_dim, hidden_dim)
-        self.linear2 = torch.nn.Linear(hidden_dim, hidden_dim)
-        self.linear3 = torch.nn.Linear(hidden_dim, out_dim)
+        in_linear = torch.nn.Linear(in_dim, hidden_dim)
+        out_linear = torch.nn.Linear(hidden_dim, out_dim)
+        self.linear = []
+        self.linear.append(in_linear)
+        for _ in range(hidden_layer):
+            self.linear.append(torch.nn.Linear(hidden_dim, hidden_dim))
+        self.linear.append(out_linear)
+        self.linear = torch.nn.ModuleList(self.linear)
         self.relu = torch.nn.ReLU()
 
     def forward(self, x):
         # MLP with polynomial activation function
-        out = self.relu(self.linear1(x))
-        out = self.relu(self.linear2(out))
-        out = self.linear3(out)
+        for m in self.linear[:-1]:
+            x = self.relu(m(x))
+        out = self.linear[-1](x)
         return out
