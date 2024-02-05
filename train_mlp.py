@@ -32,11 +32,12 @@ if __name__ == "__main__":
     )
 
     """Get Train Configurations"""
+    torch.manual_seed(2024)
     in_dim = 18
     hidden_dim = 8
     out_dim = 2
     total_epoch = 100
-    learning_rate = 1e-3
+    learning_rate = 1e-4
     model = MLP(in_dim=in_dim, hidden_dim=hidden_dim, out_dim=out_dim, hidden_layer=1)
     criterion = CrossEntropyLoss()
     optimizer = optim.AdamW(model.parameters(), lr=learning_rate)
@@ -64,7 +65,7 @@ if __name__ == "__main__":
     )
 
     """Checkpointing"""
-    PATH = "./data/mlp_ckpt.pt"
+    PATH = "./data/mlp_l3_hidden8_ckpt.pt"
     torch.save(
         {
             "model_state_dict": model.state_dict(),
