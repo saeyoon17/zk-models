@@ -92,7 +92,7 @@ def test_perf(num_trials, result, ckpt, hidden_layer):
             # dump files
             with open(f"circom_data/input_{idx}.json", "w") as f:
                 json.dump(scaled_weights, f)
-        ipdb.set_trace()
+        # ipdb.set_trace()
 
         # Before this, you manually need to execute:
         # cd circom_data
@@ -110,7 +110,7 @@ def test_perf(num_trials, result, ckpt, hidden_layer):
             st = time.time()
             a = check_output(
                 [
-                    f"node ./circom_data/mlp_js/generate_witness.js ./circom_data/mlp_js/mlp.wasm ./circom_data/input_{i}.json ./circom_data/witness_{i}.wtns"
+                    f"node ./circom_data/mlp_l3_d4_js/generate_witness.js ./circom_data/mlp_l3_d4_js/mlp_l3_d4.wasm ./circom_data/input_{i}.json ./circom_data/witness_{i}.wtns"
                 ],
                 shell=True,
             )
@@ -141,11 +141,11 @@ def test_perf(num_trials, result, ckpt, hidden_layer):
 
 if __name__ == "__main__":
     """Get checkpoints, test dataset"""
-    PATH = "./data/mlp_ckpt.pt"
+    PATH = "./data/mlp_l3_hidden4_ckpt.pt"
     ckpt = torch.load(PATH)
     result = defaultdict(lambda: [])
     in_dim = 18
-    hidden_dim = 8
+    hidden_dim = 4
     out_dim = 2
     num_trials = 1
     batch_size = 16

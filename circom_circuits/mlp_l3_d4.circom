@@ -92,4 +92,4 @@ template MLP (batch_size,in,hidden,out) {
     }
 }
 //bs x input_dim x output_dim
-component main {public [batch_in]} = MLP(16,18,4, 2);
+component main {public [batch_in]} = MLP(16,18,4,2);
