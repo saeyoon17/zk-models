@@ -32,7 +32,7 @@ def test_perf(num_trials, result, ckpt, hidden_layer):
             correct += torch.sum(pred == label).item()
 
             # scaling layers
-            scaling = float(10 ** 4)
+            scaling = float(10 ** 2)
             bias_scaling = scaling ** 2
             feat_scaled = [int(e * scaling) for e in feat.reshape(-1).tolist()]
             scaled_weights = dict()
@@ -110,7 +110,7 @@ def test_perf(num_trials, result, ckpt, hidden_layer):
             st = time.time()
             a = check_output(
                 [
-                    f"node ./circom_data/mlp_l3_d4_js/generate_witness.js ./circom_data/mlp_l3_d4_js/mlp_l3_d4.wasm ./circom_data/input_{i}.json ./circom_data/witness_{i}.wtns"
+                    f"node ./circom_data/mlp_l8_d4_js/generate_witness.js ./circom_data/mlp_l8_d4_js/mlp_l8_d4.wasm ./circom_data/input_{i}.json ./circom_data/witness_{i}.wtns"
                 ],
                 shell=True,
             )
@@ -141,7 +141,7 @@ def test_perf(num_trials, result, ckpt, hidden_layer):
 
 if __name__ == "__main__":
     """Get checkpoints, test dataset"""
-    PATH = "./data/mlp_l3_hidden4_ckpt.pt"
+    PATH = "./data/mlp_l8_hidden4_ckpt.pt"
     ckpt = torch.load(PATH)
     result = defaultdict(lambda: [])
     in_dim = 18
@@ -149,7 +149,7 @@ if __name__ == "__main__":
     out_dim = 2
     num_trials = 1
     batch_size = 16
-    hidden_layer = 1
+    hidden_layer = 6
     model = MLP(in_dim=in_dim, hidden_dim=hidden_dim, out_dim=out_dim, hidden_layer=hidden_layer)
     model.load_state_dict(ckpt["model_state_dict"])
     test_data = HeartFailureDataset(split="test")
