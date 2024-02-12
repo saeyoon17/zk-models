@@ -1,6 +1,6 @@
 # zk-models
 This repository aims to provide pipelines for trainig neural networks and proving them by transforming networks to zero-knowledge circuits.
-Current implementation supports transforming linear regression model and multi-layer perceptron (MLP) to zk circuit.
+Current implementation supports transforming multi-layer perceptron (MLP) with flexible number of layers to zk circuit.
 You can choose to convert neural network to zk circuit by using Circom or EZKL.
 
 ## Installing packages
@@ -10,12 +10,8 @@ pip install -r requirements.txt
 ```
 
 ## Training neural network.
-*train_linear_regression.py* and *train_mlp.py* provides pipeline for training heart failure prediction model.
+*train_mlp.py* provides pipeline for training heart failure prediction model. You can flexibly select the hidden vector dimension and number of hidden layers inside the file.
 You can train your model by running:
-```
-python train_linear_regression.py
-```
-or
 ```
 python train_mlp.py
 ```
