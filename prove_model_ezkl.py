@@ -7,6 +7,7 @@ import ezkl
 import ipdb
 import numpy as np
 import torch
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
@@ -17,6 +18,8 @@ from train_linear_regression import collate_fn
 
 def test_perf(num_trials, result):
     for trial_idx in tqdm(range(num_trials)):
+        labels = []
+        preds = []
         total = 0
         correct = 0
         zk_total = 0
@@ -75,7 +78,7 @@ def test_perf(num_trials, result):
                 settings_path,
                 "resources",
                 max_logrows=12,
-                scales=[2],
+                scales=[4],
             )
             result["calibration_time"].append(time.time() - st)
 
@@ -105,6 +108,8 @@ def test_perf(num_trials, result):
             zk_pred = torch.argmax(scaled_output, dim=-1)
             zk_total += len(zk_pred)
             zk_correct += torch.sum(zk_pred == label).item()
+            labels = labels + label.tolist()
+            preds = preds + zk_pred.tolist()
 
             st = time.time()
             res = ezkl.setup(
@@ -150,19 +155,24 @@ def test_perf(num_trials, result):
         result["correct"].append(correct)
         result["zk_total"].append(zk_total)
         result["zk_correct"].append(zk_correct)
+        accuracy = accuracy_score(labels, preds)
+        prec = precision_score(labels, preds)
+        recall = recall_score(labels, preds)
+        f1 = f1_score(labels, preds)
+        print(accuracy, prec, recall, f1)
 
 
 if __name__ == "__main__":
     """Get checkpoints, test dataset"""
     result = defaultdict(lambda: [])
-    PATH = "./data/mlp_l8_hidden4_ckpt.pt"
+    PATH = "./data/mlp_l5_hidden4_ckpt.pt"
     ckpt = torch.load(PATH)
     in_dim = 18
     hidden_dim = 4
     out_dim = 2
     num_trials = 1
     batch_size = 16
-    model = MLP(in_dim=in_dim, hidden_dim=hidden_dim, out_dim=out_dim, hidden_layer=6)
+    model = MLP(in_dim=in_dim, hidden_dim=hidden_dim, out_dim=out_dim, hidden_layer=3)
     model.load_state_dict(ckpt["model_state_dict"])
     test_data = HeartFailureDataset(split="test")
     test_loader = DataLoader(
