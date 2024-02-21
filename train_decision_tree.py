@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.tree import DecisionTreeClassifier as De
 from hummingbird.ml import convert
 from data import HeartFailureDataset
-
+from sklearn import tree
 
 # custom collate_fn
 def collate_fn(data):
@@ -43,6 +43,9 @@ if __name__ == "__main__":
     print(
         f"Total: {total}, Correct: {correct}, Accuracy: {round(correct/total*100, 2)}"
     )
+
+    txt = tree.export_text(clr)
+    print(txt)
 
     """Checkpointing"""
     PATH = f"./data/decision_tree.pkl"
