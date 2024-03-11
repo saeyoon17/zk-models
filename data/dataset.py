@@ -61,3 +61,6 @@ class HeartFailureDataset(Dataset):
             if self.split == "train"
             else {"feat": self.x_test[idx], "label": self.y_test[idx]}
         )
+
+    def get_data(self):
+        return self.x_train, self.x_test, self.y_train, self.y_test

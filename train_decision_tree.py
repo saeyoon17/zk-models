@@ -30,7 +30,7 @@ if __name__ == "__main__":
     """Get Train Configurations"""
     # todo: fix scikit-learn seed
     # torch.manual_seed(17)
-    clr = De()
+    clr = De(max_depth=3)
     clr.fit(x_train, y_train)
 
     circuit = convert(clr, "torch", x_test[:1]).model
@@ -76,7 +76,6 @@ if __name__ == "__main__":
         recurse(0, 1, 0)
         ipdb.set_trace()
         print(nodes)
-
 
     feature_names = [str(i) for i in range(18)]
     tree_to_code(clr, feature_names)
