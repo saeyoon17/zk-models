@@ -35,9 +35,6 @@ if __name__ == "__main__":
 
     circuit = convert(clr, "torch", x_test[:1]).model
 
-    """Start Training"""
-
-    # ipdb.set_trace()
     """Evaluation"""
     total = len(y_test)
     correct = 0
@@ -74,7 +71,6 @@ if __name__ == "__main__":
             return idx
 
         recurse(0, 1, 0)
-        ipdb.set_trace()
         print(nodes)
 
     feature_names = [str(i) for i in range(18)]
