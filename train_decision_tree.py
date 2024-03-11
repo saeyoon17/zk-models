@@ -45,37 +45,6 @@ if __name__ == "__main__":
         f"Total: {total}, Correct: {correct}, Accuracy: {round(correct/total*100, 2)}"
     )
 
-    txt = tree.export_text(clr)
-
-    def tree_to_code(tree, feature_names):
-        tree_ = tree.tree_
-        feature_name = [
-            feature_names[i] if i != _tree.TREE_UNDEFINED else "undefined!"
-            for i in tree_.feature
-        ]
-
-        nodes = []
-
-        def recurse(node, depth, idx):
-            if tree_.feature[node] != _tree.TREE_UNDEFINED:
-                name = feature_name[node]
-                threshold = tree_.threshold[node]
-                nodes.append([idx, name, threshold])
-                idx = recurse(tree_.children_left[node], depth + 1, idx + 1)
-                nodes.append([idx + 1, name, threshold])
-                idx = idx + 1
-                idx = recurse(tree_.children_right[node], depth + 1, idx + 1)
-            else:
-                nodes.append([-1, idx, np.argmax(tree_.value[node][0])])
-
-            return idx
-
-        recurse(0, 1, 0)
-        print(nodes)
-
-    feature_names = [str(i) for i in range(18)]
-    tree_to_code(clr, feature_names)
-
     """Checkpointing"""
     PATH = f"./data/decision_tree.pkl"
     with open(PATH, "wb") as f:
