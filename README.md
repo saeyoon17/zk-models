@@ -8,8 +8,7 @@ You can install necessary packages by running:
 ```
 pip install -r requirements.txt
 ```
-
-## Training neural network.
+# Training neural network.
 *train_mlp.py* provides pipeline for training heart failure prediction model. You can flexibly select the hidden vector dimension and number of hidden layers inside the file.
 You can train your model by running:
 ```
@@ -35,7 +34,7 @@ snarkjs groth16 setup mlp.r1cs pot19_final.ptau proof0.key
 snarkjs zkey contribute proof0.key proof01.key --name="your name" -v
 snarkjs zkey export verificationkey proof01.key verification_key.json
 ```
-after thant, you can run 
+*or*, you can run *key-gen.sh* inside circom_data/ directory. Make sure to change proving constant depending on the circuit size you are trying to prove.  After thant, you can run 
 ```
 cd ..
 python prove_model_circom.py
@@ -48,5 +47,14 @@ After training your model, you can generate proof by running:
 python prove_model_ezkl.py
 ```
 
-## Notes
-*prove_model_circom.py* and *prove_model_ezkl.py* supports utils for calculating accuracy, performance degradation when converted to zk circuit, and checking time complexity for generating proof / proof verification. The results will come out after all proofs have been generated and verified. We observe performance degradation for EZKL from time-to-time, in which we conjecture this may be due to different weights in each train time. We plan to look deeper in the future.
+# Training decision tree.
+*train_decision_tree.py* trains scikit-learn decision tree for heart failure prediction. You can train decision tree by running:
+```
+python train_decision_tree.py
+```
+And then, you can prove decision tree output by running: 
+```
+python prove_dt_ezkl.py
+```
+
+*zk-models* repository currently only supports proving decision tree with EZKL. Yet, we do provide utils for obtaining time complexity for proving decision tree [here](https://github.com/saeyoon17/ZKDT). Details can be found in the ZKDT forked repository.
