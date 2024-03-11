@@ -136,7 +136,7 @@ def test_perf(num_trials, result):
                 "single",
             )
             result["proof_generation_time"].append(time.time() - st)
-            print(res)
+            # print(res)
             assert os.path.isfile(proof_path)
 
             # VERIFY IT
