@@ -26,13 +26,6 @@ def test_perf(num_trials, result):
     # batch_size=16
     for trial_idx in tqdm(range(num_trials)):
         feat = torch.tensor(np.array(x_test))
-        new_feat = []
-        for i in range(18):
-            mean = torch.mean(feat[:, i])
-            std = torch.std(feat[:, i])
-            normalized = (feat[:, i] - mean) / std
-            new_feat.append(normalized)
-        feat = torch.stack(new_feat, dim=1)
         label = torch.tensor(np.array(y_test))
         torch_out = torch.tensor(model.predict(x_test))
         input_size = np.array(feat).shape
@@ -54,11 +47,11 @@ def test_perf(num_trials, result):
                     },
                 )
 
-        data_array = ((feat[:20]).detach().numpy()).reshape([-1]).tolist()
+        data_array = ((feat).detach().numpy()).reshape([-1]).tolist()
         data = dict(
             # input_shapes=[feat.shape],
             input_data=[data_array],
-            output_data=[((torch_out[:20]).detach().numpy()).reshape([-1]).tolist()],
+            output_data=[((torch_out).detach().numpy()).reshape([-1]).tolist()],
         )
 
         # data_array = ((feat).detach().numpy()).reshape([-1]).tolist()
@@ -75,7 +68,7 @@ def test_perf(num_trials, result):
         py_run_args.input_visibility = "public"
         py_run_args.output_visibility = "public"
         py_run_args.param_visibility = "private"  # private by default
-        py_run_args.variables = [("batch_size", 20)]
+        py_run_args.variables = [("batch_size", feat.size(0))]
 
         st = time.time()
         res = ezkl.gen_settings(model_path, settings_path, py_run_args=py_run_args)
@@ -90,8 +83,8 @@ def test_perf(num_trials, result):
             model_path,
             settings_path,
             "resources",
-            # max_logrows=12,
-            # scales=[4],
+            max_logrows=20,
+            scales=[4],
         )
         result["calibration_time"].append(time.time() - st)
 
@@ -112,17 +105,17 @@ def test_perf(num_trials, result):
         with open(witness_path, "r") as f:
             wtns = json.load(f)
 
-            # scaled_input = torch.tensor(
-            #     [float(e) for e in wtns["pretty_elements"]["rescaled_inputs"][0]]
-            # ).reshape(input_size)
-            # scaled_output = torch.tensor(
-            #     [float(e) for e in wtns["pretty_elements"]["rescaled_outputs"][0]]
-            # ).reshape(output_size)
-            # zk_pred = scaled_output.view(-1)
-            # zk_total += zk_pred.size(0)
-            # zk_correct += torch.sum(zk_pred == label).item()
-            # labels = labels + label.tolist()
-            # preds = preds + zk_pred.tolist()
+            scaled_input = torch.tensor(
+                [float(e) for e in wtns["pretty_elements"]["rescaled_inputs"][0]]
+            ).reshape(input_size)
+            scaled_output = torch.tensor(
+                [float(e) for e in wtns["pretty_elements"]["rescaled_outputs"][0]]
+            ).reshape(output_size)
+            zk_pred = scaled_output.view(-1)
+            zk_total += zk_pred.size(0)
+            zk_correct += torch.sum(zk_pred == label).item()
+            labels = labels + label.tolist()
+            preds = preds + zk_pred.tolist()
 
             st = time.time()
             res = ezkl.setup(
