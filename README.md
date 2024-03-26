@@ -71,8 +71,8 @@ python prove_kmeans_ezkl.py
 Also, you can prove classification with circom by running:
 ```bash
 cd circom_circuits
-# change circom circuit inside key-gen.sh to kmeans.circom
 bash key-gen.sh
 cd ..
 python prove_kmeans_circom.py
 ```
+Please make sure to change circom circuit inside key-gen.sh to kmeans.circom since this is also used for proving MLP.
