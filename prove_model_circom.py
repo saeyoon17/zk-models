@@ -35,8 +35,8 @@ def test_perf(num_trials, result, ckpt, hidden_layer):
             correct += torch.sum(pred == label).item()
 
             # scaling layers
-            scaling = float(10 ** 0)
-            bias_scaling = scaling ** 2
+            scaling = float(10**0)
+            bias_scaling = scaling**2
             feat_scaled = [int(e * scaling) for e in feat.reshape(-1).tolist()]
             scaled_weights = dict()
             for layer_idx in range(hidden_layer + 2):
@@ -121,7 +121,7 @@ def test_perf(num_trials, result, ckpt, hidden_layer):
             st = time.time()
             a = check_output(
                 [
-                    f"node ./circom_data/mlp_l8_d4_js/generate_witness.js ./circom_data/mlp_l8_d4_js/mlp_l8_d4.wasm ./circom_data/input_{i}.json ./circom_data/witness_{i}.wtns"
+                    f"node ./circom_data/mlp_l3_d8_js/generate_witness.js ./circom_data/mlp_l3_d8_js/mlp_l3_d8.wasm ./circom_data/input_{i}.json ./circom_data/witness_{i}.wtns"
                 ],
                 shell=True,
             )
@@ -152,15 +152,15 @@ def test_perf(num_trials, result, ckpt, hidden_layer):
 
 if __name__ == "__main__":
     """Get checkpoints, test dataset"""
-    PATH = "./data/mlp_l5_hidden4_ckpt.pt"
+    PATH = "./data/mlp_l3_hidden8_ckpt.pt"
     ckpt = torch.load(PATH)
     result = defaultdict(lambda: [])
     in_dim = 18
-    hidden_dim = 4
+    hidden_dim = 8
     out_dim = 2
     num_trials = 1
-    batch_size = 16
-    hidden_layer = 3
+    batch_size = 276
+    hidden_layer = 1
     model = MLP(
         in_dim=in_dim, hidden_dim=hidden_dim, out_dim=out_dim, hidden_layer=hidden_layer
     )

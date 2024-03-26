@@ -77,7 +77,7 @@ def test_perf(num_trials, result):
                 model_path,
                 settings_path,
                 "resources",
-                max_logrows=12,
+                max_logrows=20,
                 scales=[4],
             )
             result["calibration_time"].append(time.time() - st)
@@ -165,14 +165,14 @@ def test_perf(num_trials, result):
 if __name__ == "__main__":
     """Get checkpoints, test dataset"""
     result = defaultdict(lambda: [])
-    PATH = "./data/mlp_l5_hidden4_ckpt.pt"
+    PATH = "./data/mlp_l3_hidden8_ckpt.pt"
     ckpt = torch.load(PATH)
     in_dim = 18
-    hidden_dim = 4
+    hidden_dim = 8
     out_dim = 2
     num_trials = 1
-    batch_size = 16
-    model = MLP(in_dim=in_dim, hidden_dim=hidden_dim, out_dim=out_dim, hidden_layer=3)
+    batch_size = 276
+    model = MLP(in_dim=in_dim, hidden_dim=hidden_dim, out_dim=out_dim, hidden_layer=1)
     model.load_state_dict(ckpt["model_state_dict"])
     test_data = HeartFailureDataset(split="test")
     test_loader = DataLoader(
