@@ -5,13 +5,13 @@ You can choose to convert neural network to zk circuit by using Circom or EZKL.
 
 ## Installing packages
 You can install necessary packages by running:
-```
+```bash
 pip install -r requirements.txt
 ```
 # Training neural network.
 *train_mlp.py* provides pipeline for training heart failure prediction model. You can flexibly select the hidden vector dimension and number of hidden layers inside the file.
 You can train your model by running:
-```
+```bash
 python train_mlp.py
 ```
 The dataset is contained in the repository under name *heart.csv*. 
@@ -24,7 +24,7 @@ For circom proof generation, we use Groth16 backend. Therefore, you first need t
 They only need to be run once. After generating the keys, they can be reused in later proving protocol.
 They are: 
 
-```
+```bash
 cd circom_data
 circom ../circom_circuits/mlp.circom --r1cs --wasm --sym
 snarkjs powersoftau new bn128 19 pot19_0000.ptau -v
@@ -35,7 +35,7 @@ snarkjs zkey contribute proof0.key proof01.key --name="your name" -v
 snarkjs zkey export verificationkey proof01.key verification_key.json
 ```
 *or*, you can run *key-gen.sh* inside circom_data/ directory. Make sure to change proving constant depending on the circuit size you are trying to prove.  After thant, you can run 
-```
+```bash
 cd ..
 python prove_model_circom.py
 ```
@@ -43,18 +43,36 @@ for proving your model. We note that current code supports proof generation for 
 
 ## Converting neural network using EZKL
 After training your model, you can generate proof by running:
-```
+```bash
 python prove_model_ezkl.py
 ```
 
 # Training decision tree.
 *train_decision_tree.py* trains scikit-learn decision tree for heart failure prediction. You can train decision tree by running:
-```
+```bash
 python train_decision_tree.py
 ```
-And then, you can prove decision tree output by running: 
-```
+And then, you can prove decision tree with EZKL output by running: 
+```bash
 python prove_dt_ezkl.py
 ```
 
 *zk-models* repository currently only supports proving decision tree with EZKL. Yet, we do provide utils for obtaining time complexity for proving decision tree [here](https://github.com/saeyoon17/ZKDT). Details can be found in the ZKDT forked repository.
+
+# Training K-Means Clustering
+*train_kmeans.py* performs scikit-learn K-Means Clustering for heart failure prediction. You can run clustering by:
+```basg
+python train_kmeans.py
+```
+And then, you can prove k-means clustering based classification output with EZKL by running: 
+```bash
+python prove_kmeans_ezkl.py
+```
+Also, you can prove classification with circom by running:
+```bash
+cd circom_circuits
+# change circom circuit inside key-gen.sh to kmeans.circom
+bash key-gen.sh
+cd ..
+python prove_kmeans_circom.py
+```
